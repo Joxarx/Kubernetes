@@ -1,0 +1,59 @@
+version: '3'
+services:
+  project-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: project_db
+    volumes:
+      - project-db-data:/var/lib/postgresql/data
+
+  task-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: task_db
+    volumes:
+      - task-db-data:/var/lib/postgresql/data
+
+  project-service:
+    build: ./project_service
+    ports:
+      - "5000:5000"
+    depends_on:
+      - project-db
+    environment:
+      DATABASE_URL: postgresql://user:password@project-db/project_db
+
+  task-service:
+    build: ./task_service
+    ports:
+      - "5001:5001"
+    depends_on:
+      - task-db
+    environment:
+      DATABASE_URL: postgresql://user:password@task-db/task_db
+
+  collaboration-service:
+    build: ./collaboration_service
+    ports:
+      - "5002:5002"
+
+  integration-service:
+    build: ./integration_service
+    ports:
+      - "5003:5003"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - project-service
+      - task-service
+
+volumes:
+  project-db-data:
+  task-db-data:
